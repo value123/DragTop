@@ -20,10 +20,13 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +38,7 @@ import android.widget.FrameLayout;
  */
 public class DragTopLayout extends FrameLayout {
 
+    private static final String TAG = "DragTopLayout";
     private ViewDragHelper dragHelper;
     private int dragRange;
     private View dragContentView;
@@ -105,9 +109,11 @@ public class DragTopLayout extends FrameLayout {
         super(context, attrs, defStyleAttr);
         init(attrs);
     }
-
+    GestureDetectorCompat mDetectorCompat;
     private void init(AttributeSet attrs) {
         dragHelper = ViewDragHelper.create(this, 1.0f, callback);
+        mDetectorCompat = new GestureDetectorCompat(getContext(),
+                mGestureListener);
 
         // init from attrs
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.DragTopLayout);
@@ -291,9 +297,25 @@ public class DragTopLayout extends FrameLayout {
         }
     }
 
+
+    GestureDetector.SimpleOnGestureListener mGestureListener = new GestureDetector.SimpleOnGestureListener() {
+        public boolean onScroll(MotionEvent e1, MotionEvent e2,
+                                float distanceX, float distanceY) {
+            if((Math.abs(distanceX) < Math.abs(distanceY))){
+                return true;
+
+            }else {
+                return false;
+            }
+        };
+    };
+
     private ViewDragHelper.Callback callback = new ViewDragHelper.Callback() {
+
         @Override
         public boolean tryCaptureView(View child, int pointerId) {
+
+            Log.d(TAG,"tryCaptureView>>"+pointerId+">>>isTopView="+(child == topView));
             if (child == topView && captureTop) {
                 dragHelper.captureChildView(dragContentView, pointerId);
                 return false;
@@ -303,6 +325,7 @@ public class DragTopLayout extends FrameLayout {
 
         @Override
         public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
+            Log.d(TAG,"onViewPositionChanged>>>");
             super.onViewPositionChanged(changedView, left, top, dx, dy);
             contentTop = top;
             requestLayout();
@@ -312,11 +335,13 @@ public class DragTopLayout extends FrameLayout {
 
         @Override
         public int getViewVerticalDragRange(View child) {
+            Log.d(TAG,"getViewVerticalDragRange>>>dragRange="+dragRange);
             return dragRange;
         }
 
         @Override
         public int clampViewPositionVertical(View child, int top, int dy) {
+            Log.d(TAG,"clampViewPositionVertical>>>overDrag="+overDrag);
             if (overDrag) {
                 // Drag over the top view height.
                 return Math.max(top, getPaddingTop() + collapseOffset);
@@ -327,6 +352,7 @@ public class DragTopLayout extends FrameLayout {
 
         @Override
         public void onViewReleased(View releasedChild, float xvel, float yvel) {
+            Log.d(TAG,"onViewReleased>>>");
             super.onViewReleased(releasedChild, xvel, yvel);
             // yvel > 0 Fling down || yvel < 0 Fling up
             int top;
@@ -341,6 +367,7 @@ public class DragTopLayout extends FrameLayout {
 
         @Override
         public void onViewDragStateChanged(int state) {
+            Log.d(TAG,"onViewDragStateChanged>>>"+state);
             super.onViewDragStateChanged(state);
         }
     };
@@ -352,11 +379,24 @@ public class DragTopLayout extends FrameLayout {
         }
     }
 
+
+
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+        boolean onTouchEvent = mDetectorCompat.onTouchEvent(ev);
+        //将Touch事件传递给ViewDragHelper
         try {
-
-            boolean intercept = shouldIntercept && dragHelper.shouldInterceptTouchEvent(ev);
+            boolean intercept;
+            Log.d(TAG,"onTouchEvent = " +onTouchEvent);
+            if((dragHelper.getCapturedView()==null)||(dragHelper.getCapturedView()!=null && dragHelper.getCapturedView() == topView)){
+                Log.d(TAG,"111");
+                intercept = shouldIntercept && (dragHelper.shouldInterceptTouchEvent(ev) | onTouchEvent);
+            }else{
+                Log.d(TAG,"222");
+                intercept = shouldIntercept && (dragHelper.shouldInterceptTouchEvent(ev));
+            }
+            Log.d(TAG,"intercept = " +intercept);
             return intercept;
         } catch (NullPointerException e) {
             e.printStackTrace();
@@ -368,7 +408,7 @@ public class DragTopLayout extends FrameLayout {
     public boolean onTouchEvent(MotionEvent event) {
 
         final int action = MotionEventCompat.getActionMasked(event);
-
+        Log.d(TAG,"ratio = " +ratio+">>>dispatchingChildrenContentView="+dispatchingChildrenContentView);
         if (!dispatchingChildrenContentView) {
             try {
                 // There seems to be a bug on certain devices: "pointerindex out of range" in viewdraghelper
@@ -378,8 +418,8 @@ public class DragTopLayout extends FrameLayout {
                 e.printStackTrace();
             }
         }
-
         if (action == MotionEvent.ACTION_MOVE && ratio == 0.0f) {
+            Log.d(TAG,"MotionEvent.ACTION_MOVE");
             dispatchingChildrenContentView = true;
             if (!dispatchingChildrenDownFaked) {
                 dispatchingChildrenStartedAtY = event.getY();
@@ -389,6 +429,7 @@ public class DragTopLayout extends FrameLayout {
             dragContentView.dispatchTouchEvent(event);
         }
 
+        Log.d(TAG,"dispatchingChildrenStartedAtY="+dispatchingChildrenStartedAtY+">>>event.getY()="+event.getY());
         if (dispatchingChildrenContentView && dispatchingChildrenStartedAtY < event.getY()) {
             resetDispatchingContentView();
         }
