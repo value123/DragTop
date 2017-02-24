@@ -71,7 +71,12 @@ public class MainActivity extends ActionBarActivity {
 
         toolbar.setTitle("DragTopLayout");
         setSupportActionBar(toolbar);
-
+        findViewById(R.id.actionButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this,CoordinateViewPagerActivity.class));
+            }
+        });
 
         // Optional setting or set them in your xml.
 //        dragLayout.setOverDrag(true)

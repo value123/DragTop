@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
 
     defaultConfig {
         applicationId "github.chenupt.dragtoplayout.demo"
         minSdkVersion 11
-        targetSdkVersion 21
+        targetSdkVersion 19
         versionCode 4
         versionName "1.1"
     }
@@ -34,5 +34,6 @@ dependencies {
     // Glide's OkHttp Integration
     compile 'com.github.bumptech.glide:okhttp-integration:1.3.1@aar'
     compile 'com.squareup.okhttp:okhttp:2.5.0'
-
+    compile 'com.android.support:design:23.4.0'
+    compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
 }

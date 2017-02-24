@@ -12,17 +12,18 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name">
-
-        </activity>
-        <activity android:name=".AboutActivity"></activity>
-        <activity android:name=".pulltorefresh.PullToRefreshActivity"></activity>
-        <activity android:name=".TopViewPageActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".AboutActivity"></activity>
+        <activity android:name=".pulltorefresh.PullToRefreshActivity"></activity>
+        <activity android:name=".TopViewPageActivity"/>
+        <activity android:name=".TopViewPageActivity1"/>
+        <activity android:name=".CoordinateViewPagerActivity"/>
+
     </application>
 
 </manifest>

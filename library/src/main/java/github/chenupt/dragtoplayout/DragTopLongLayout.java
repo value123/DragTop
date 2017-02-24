@@ -31,18 +31,19 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 /**
  * Created by chenupt@gmail.com on 2015/1/18.
  * Description : Drag down to show a menu panel on the top.
  */
-public class DragTopLayout extends FrameLayout {
+public class DragTopLongLayout extends FrameLayout {
 
     private static final String TAG = "DragTopLayout";
     private ViewDragHelper dragHelper;
     private int dragRange;
     private View dragContentView;
-    private View topView;
+    private ViewGroup topView;
 
     private int contentTop;
     private int topViewHeight;
@@ -97,15 +98,15 @@ public class DragTopLayout extends FrameLayout {
 
 
 
-    public DragTopLayout(Context context) {
+    public DragTopLongLayout(Context context) {
         this(context, null);
     }
 
-    public DragTopLayout(Context context, AttributeSet attrs) {
+    public DragTopLongLayout(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public DragTopLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+    public DragTopLongLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(attrs);
     }
@@ -153,13 +154,13 @@ public class DragTopLayout extends FrameLayout {
         if (dragContentViewId != -1 && topViewId != -1) {
             bindId(this);
         } else {
-            topView = getChildAt(0);
+            topView = (ViewGroup) getChildAt(0);
             dragContentView = getChildAt(1);
         }
     }
 
     private void bindId(View view) {
-        topView = view.findViewById(topViewId);
+        topView = (ViewGroup) view.findViewById(topViewId);
         dragContentView = view.findViewById(dragContentViewId);
 
         if (topView == null) {
@@ -177,18 +178,14 @@ public class DragTopLayout extends FrameLayout {
                     + "?");
         }
     }
-
-    boolean isFromInternal = false;
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        if(!isFromInternal){
-            return;
-        }
         dragRange = getHeight();
-
+        Log.d(TAG,"onLayout dragRange = " + dragRange);
         // In case of resetting the content top to target position before sliding.
         int contentTopTemp = contentTop;
+        Log.d(TAG,"onLayout contentTop = " + contentTop);
         resetTopViewHeight();
         resetContentHeight();
 
@@ -196,21 +193,54 @@ public class DragTopLayout extends FrameLayout {
                 contentTop);
         dragContentView.layout(left, contentTopTemp, right,
                 contentTopTemp + dragContentView.getHeight());
-        isFromInternal = false;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Log.d(TAG,"onMeasure");
+        measureTopHeight();
+        Log.d(TAG,"onMeasure topContainerHeight="+topContainerHeight);
+    }
+
+    int topContainerHeight = 0;
+    private void measureTopHeight() {
+        topContainerHeight = 0;
+        if(topView instanceof LinearLayout /*&& ((LinearLayout) topView).getOrientation() == LinearLayout.VERTICAL*/) {
+            int childCount = topView.getChildCount();
+            if(childCount==0){
+                topContainerHeight = topView.getHeight();
+            }else{
+                for (int i = 0; i < childCount; i++) {
+                    View view = topView.getChildAt(i);
+                    if (view.getVisibility() == View.VISIBLE) {
+                        topContainerHeight += view.getMeasuredHeight();
+                    }
+                }
+            }
+        }else{
+            topContainerHeight = topView.getHeight();
+        }
+
     }
 
     private void resetTopViewHeight() {
-        int newTopHeight = topView.getHeight();
+
+        int newTopHeight = topContainerHeight;
         // Top layout is changed
+        Log.d(TAG,"onLayout newTopHeight = " + newTopHeight );
         if (topViewHeight != newTopHeight) {
             if (panelState == PanelState.EXPANDED) {
                 contentTop = newTopHeight;
+                Log.d(TAG,"onLayout EXPANDED contentTop>>>"+contentTop);
                 handleSlide(newTopHeight);
             } else if(panelState == PanelState.COLLAPSED){
                 // update the drag content top when it is collapsed.
                 contentTop = collapseOffset;
+                Log.d(TAG,"onLayout collapseOffset>>>"+collapseOffset);
             }
             topViewHeight = newTopHeight;
+            Log.d(TAG,"onLayout topViewHeight>>>"+topViewHeight);
         }
     }
 
@@ -239,7 +269,6 @@ public class DragTopLayout extends FrameLayout {
             dragHelper.smoothSlideViewTo(dragContentView, getPaddingLeft(), contentTop);
             postInvalidate();
         } else {
-            isFromInternal = true;
             requestLayout();
         }
     }
@@ -247,7 +276,6 @@ public class DragTopLayout extends FrameLayout {
     private void calculateRatio(float top) {
         Log.d(TAG,"calculateRatio top="+top+"》》》collapseOffset="+collapseOffset);
         ratio = (top-collapseOffset) / (topViewHeight - collapseOffset);
-        Log.d(TAG,"calculateRatio ratio="+ratio);
         if (dispatchingChildrenContentView) {
             resetDispatchingContentView();
         }
@@ -337,7 +365,6 @@ public class DragTopLayout extends FrameLayout {
             Log.d(TAG,"onViewPositionChanged>>>");
             super.onViewPositionChanged(changedView, left, top, dx, dy);
             contentTop = top;
-            isFromInternal = true;
             requestLayout();
             calculateRatio(contentTop);
             updatePanelState();
@@ -517,7 +544,7 @@ public class DragTopLayout extends FrameLayout {
         }
     }
 
-    public DragTopLayout setTouchMode(boolean shouldIntercept) {
+    public DragTopLongLayout setTouchMode(boolean shouldIntercept) {
         this.shouldIntercept = shouldIntercept;
         return this;
     }
@@ -527,7 +554,7 @@ public class DragTopLayout extends FrameLayout {
      *
      * @return SetupWizard
      */
-    public DragTopLayout listener(PanelListener panelListener) {
+    public DragTopLongLayout listener(PanelListener panelListener) {
         this.panelListener = panelListener;
         return this;
     }
@@ -538,7 +565,7 @@ public class DragTopLayout extends FrameLayout {
      *
      * @return SetupWizard
      */
-    public DragTopLayout setRefreshRatio(float ratio) {
+    public DragTopLongLayout setRefreshRatio(float ratio) {
         this.refreshRatio = ratio;
         return this;
     }
@@ -549,7 +576,7 @@ public class DragTopLayout extends FrameLayout {
      *
      * @return SetupWizard
      */
-    public DragTopLayout setOverDrag(boolean overDrag) {
+    public DragTopLongLayout setOverDrag(boolean overDrag) {
         this.overDrag = overDrag;
         return this;
     }
@@ -561,7 +588,7 @@ public class DragTopLayout extends FrameLayout {
      * @param id The id (R.id.xxxxx) of the content view.
      * @return
      */
-    public DragTopLayout setDragContentViewId(int id) {
+    public DragTopLongLayout setDragContentViewId(int id) {
         this.dragContentViewId = id;
         return this;
     }
@@ -573,7 +600,7 @@ public class DragTopLayout extends FrameLayout {
      * @param id The id (R.id.xxxxx) of the top view
      * @return
      */
-    public DragTopLayout setTopViewId(int id) {
+    public DragTopLongLayout setTopViewId(int id) {
         this.topViewId = id;
         return this;
     }
@@ -605,7 +632,7 @@ public class DragTopLayout extends FrameLayout {
      *
      * @return SetupWizard
      */
-    public DragTopLayout setCollapseOffset(int px) {
+    public DragTopLongLayout setCollapseOffset(int px) {
         collapseOffset = px;
         resetContentHeight();
         return this;

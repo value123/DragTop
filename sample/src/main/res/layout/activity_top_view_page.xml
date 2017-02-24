@@ -7,40 +7,45 @@
     tools:context="github.chenupt.dragtoplayout.demo.TopViewPageActivity">
 
 
-    <github.chenupt.dragtoplayout.DragTopLayout
+    <github.chenupt.dragtoplayout.DragTopLongLayout
         android:id="@+id/drag_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-
-        <!--<ScrollView-->
-            <!--android:id="@+id/scroll_view"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="200dip"-->
-            <!--android:orientation="vertical">-->
-
-            <RelativeLayout
+            <LinearLayout
                 android:id="@+id/ll_top"
                 android:layout_width="match_parent"
-                android:layout_height="200dip"
+                android:layout_height="wrap_content"
                 android:orientation="vertical">
 
                 <android.support.v4.view.ViewPager
                     android:id="@+id/view_pager"
                     android:layout_width="match_parent"
                     android:layout_height="200dip"
+                    />
 
-                   />
+                <TextView
+                    android:id="@+id/tv_test"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#00FF00"
+                    android:gravity="top|center_horizontal"
+                    android:text="hello"
+                    android:textColor="#FF0000"
+                    />
 
-                <!--<TextView-->
-                    <!--android:id="@+id/tv_test"-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="200dip"-->
-                    <!--android:text="hello"-->
-                    <!--android:textColor="#FF0000"-->
-                    <!--android:gravity="bottom|center_horizontal"/>-->
-            </RelativeLayout>
-        <!--</ScrollView>-->
-、
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/top_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="485dp" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="20dip"
+                    android:background="#00FF00"
+                    android:gravity="top|center_horizontal"
+                    android:text="hello"
+                    android:textColor="#FF0000"
+                    />
+            </LinearLayout>
         <LinearLayout
             android:id="@+id/ll_content"
             android:layout_width="match_parent"
@@ -53,5 +58,5 @@
                 android:layout_height="wrap_content" />
 
         </LinearLayout>
-    </github.chenupt.dragtoplayout.DragTopLayout>
+    </github.chenupt.dragtoplayout.DragTopLongLayout>
 </RelativeLayout>
